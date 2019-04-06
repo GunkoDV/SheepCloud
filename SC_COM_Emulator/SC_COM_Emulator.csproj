@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A3117085-F39E-43A2-B02A-3AC91B4A5C1E}</ProjectGuid>
+    <ProjectGuid>{55FA12D7-74D7-4376-B827-CC8F97F55D86}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>SC_Gate</RootNamespace>
-    <AssemblyName>SC_Gate</AssemblyName>
+    <RootNamespace>SC_COM_Emulator</RootNamespace>
+    <AssemblyName>SC_COM_Emulator</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -46,11 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Gate_MainForm.cs">
+    <Compile Include="COM_MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Gate_MainForm.Designer.cs">
-      <DependentUpon>Gate_MainForm.cs</DependentUpon>
+    <Compile Include="COM_MainForm.Designer.cs">
+      <DependentUpon>COM_MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

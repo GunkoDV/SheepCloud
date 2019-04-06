@@ -1,6 +1,6 @@
-﻿namespace SC_Gate
+﻿namespace SC_COM_Emulator
 {
-    partial class Form1
+    partial class COM_MainForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.

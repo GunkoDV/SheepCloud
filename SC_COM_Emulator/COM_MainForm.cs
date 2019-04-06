@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SC_Gate
+namespace SC_COM_Emulator
 {
-    public partial class Form1 : Form
+    public partial class COM_MainForm : Form
     {
-        public Form1()
+        public COM_MainForm()
         {
             InitializeComponent();
         }

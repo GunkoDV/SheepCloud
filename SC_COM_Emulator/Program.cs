@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SC_Gate
+namespace SC_COM_Emulator
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace SC_Gate
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Gate_MainForm());
+            Application.Run(new COM_MainForm());
         }
     }
 }
