@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.IO.Ports;
+using System.Threading;
 
 namespace SC_COM_Emulator
 {
@@ -15,11 +17,40 @@ namespace SC_COM_Emulator
     {
         const string COMSettFileName = "\\COMSetting.xml";
         const string FileNotFoundMess = "Не найден файл настроек COMSetting.xml";
-        const string ErrorMessCaption = "Ошибка";
-        private SettingsCOM sCOM;
+        const string SaveSettOKMess = "Настройки сохранены";
+        const string ErrorMessCaption = "Ошибка!";
+        const string MessCaption = "Сообщение";
+        const string PortClose = "Порт закрыт";
+        const string PortOpen = "Порт открыт";
+        const string PortConnect = "Открыть порт";
+        const string PortDisconnect = "Закрыть порт";
+
+        private int[] bdRates_arr = new int[] { 9600, 14400, 19200 };
+        private int[] DataBits_arr = new int[] { 6, 7, 8 };
+        private SettingsCOM COMsett;
+        static SerialPort COMport;
+        static bool fPortOpenState = false;
+        static byte InCount = 2;
+        private Thread TransferThread;
+        static int SleepTimer = 50;
+        static uint RequestCounter = 0;
+        static uint ResponseCounter = 0;
+
         public COM_MainForm()
         {
             InitializeComponent();
+        }
+
+        private void UpdatePortsList()
+        {
+            string[] ports = SerialPort.GetPortNames();
+            Ports_CB.Items.Clear();
+            foreach (string port in ports)
+            {
+                Ports_CB.Items.Add(port);
+            }
+            Ports_CB.Sorted = true;
+            Ports_CB.SelectedIndex = 0;
         }
 
         private string GetCOMSettingsFile()
@@ -38,23 +69,186 @@ namespace SC_COM_Emulator
             return "";                     
         }
 
-        private void COM_MainForm_Load(object sender, EventArgs e)
+        private void LoadCOMSettings()
         {
             string FileName = GetCOMSettingsFile();
             if (FileName != "")
             {
-                sCOM = new SettingsCOM(Environment.CurrentDirectory.ToString() + "\\COMSetting.xml");
+                COMsett = new SettingsCOM(FileName);
             }
             else
             {
-                MessageBox.Show(FileNotFoundMess, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(FileNotFoundMess, ErrorMessCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            COMsett.ReadXml();
+            Ports_CB.SelectedIndex = Ports_CB.Items.IndexOf(COMsett.Fields.PortName);
+            bdRate_CB.SelectedIndex = bdRate_CB.Items.IndexOf(COMsett.Fields.BaudRate.ToString());
+            Databits_CB.SelectedIndex = Databits_CB.Items.IndexOf(COMsett.Fields.DataBits.ToString());
+            if (COMsett.Fields.pr == Parity.Odd)
+            {
+                ParityOdd_RB.Checked = true;
+            }
+            if (COMsett.Fields.pr == Parity.Even)
+            {
+                ParityEven_RB.Checked = true;
+            }
+            if (COMsett.Fields.sb == StopBits.OnePointFive)
+            {
+                OneHalfSB_RB.Checked = true;
+            }
+            if (COMsett.Fields.sb == StopBits.Two)
+            {
+                TwoSB_RB.Checked = true;
             }
         }
-
-        private void Test_button_Click(object sender, EventArgs e)
+        private void LoadElements()
         {
-            sCOM.ReadXml();
-            label1.Text = sCOM.Fields.PortName.ToString();
+            foreach (int bdR in bdRates_arr)
+            {
+                bdRate_CB.Items.Add(bdR.ToString());
+            }
+            foreach (int db in DataBits_arr)
+            {
+                Databits_CB.Items.Add(db.ToString());
+            }
+            ParityNone_RB.Checked = true;
+            OneSB_RB.Checked = true;
+        }
+        private void COM_MainForm_Load(object sender, EventArgs e)
+        {
+            UpdatePortsList();
+            LoadElements();
+            LoadCOMSettings();
+            PortOffline();
+        }
+
+        private void SaveSett_btn_Click(object sender, EventArgs e)
+        {
+            COMsett.Fields.PortName = Ports_CB.Text;
+            COMsett.Fields.BaudRate = Int32.Parse(bdRate_CB.Text);           
+            COMsett.Fields.pr = Parity.None;
+            if (ParityOdd_RB.Checked)
+            {
+                COMsett.Fields.pr = Parity.Odd;
+            }
+            if (ParityEven_RB.Checked)
+            {
+                COMsett.Fields.pr = Parity.Even;
+            }
+            COMsett.Fields.DataBits = Int32.Parse(Databits_CB.Text);
+            COMsett.Fields.sb = StopBits.One;
+            if (OneHalfSB_RB.Checked)
+            {
+                COMsett.Fields.sb = StopBits.OnePointFive;
+            }
+            if (TwoSB_RB.Checked)
+            {
+                COMsett.Fields.sb = StopBits.Two;
+            }
+            COMsett.WriteXml();
+            LoadCOMSettings();
+            MessageBox.Show(SaveSettOKMess, MessCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void UpdateCOMList_lbl_Click(object sender, EventArgs e)
+        {
+            UpdatePortsList();
+        }
+
+        static byte [] ReadFromPort()
+        {
+            int bytesCount = 0;
+            byte[] buff = new byte[2];
+            do
+            {
+                bytesCount = COMport.BytesToRead;
+                if ((bytesCount % InCount) == 0)
+                {
+                    Array.Resize<byte>(ref buff, bytesCount);                    
+                    COMport.Read(buff, 0, bytesCount);
+                    return buff;
+                }
+            } while ((bytesCount % InCount) == 0);
+            RequestCounter++;
+            return buff;
+        }
+        static void SendToPort(byte [] InArr)
+        {
+            byte id = InArr[0];
+            byte CountNumbers = InArr[1];
+            byte[] buff = new byte[CountNumbers+1];
+            buff[0] = id;
+            Random rand = new Random();
+            for (int i=1; i<CountNumbers+1;i++)
+            {
+                buff[i] = (byte)rand.Next();
+            }
+            COMport.Write(buff, 0, buff.Length);
+            ResponseCounter = ResponseCounter + CountNumbers + 1;
+        }
+
+        static void PortDataExchange()
+        {            
+            while (!fPortOpenState)
+            {
+                byte[] buffIn = ReadFromPort();
+                SendToPort(buffIn);
+                Thread.Sleep(SleepTimer);
+            }            
+        }
+
+        private void OpenPort()
+        {            
+            COMport = new SerialPort(
+                COMsett.Fields.PortName,
+                COMsett.Fields.BaudRate,
+                COMsett.Fields.pr,
+                COMsett.Fields.DataBits,
+                COMsett.Fields.sb);
+            COMport.Open();
+        }
+        private void PortOnline()
+        {
+            Port_btn.Text = PortDisconnect;
+            PortState_lbl.Text = PortOpen;            
+        }
+        private void PortOffline()
+        {
+            Port_btn.Text = PortConnect;
+            PortState_lbl.Text = PortClose;            
+        }
+        private void Port_btn_Click(object sender, EventArgs e)
+        {
+            if (!fPortOpenState)
+            {
+                try
+                {
+                    OpenPort();
+                    fPortOpenState = true;
+                    PortOnline();
+                    TransferThread = new Thread(PortDataExchange);
+                    TransferThread.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ErrorMessCaption,
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                try
+                {
+                    COMport.Close();
+                    fPortOpenState = false;
+                    PortOffline();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, ErrorMessCaption,
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 
