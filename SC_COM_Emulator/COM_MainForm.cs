@@ -179,7 +179,7 @@ namespace SC_COM_Emulator
             }
             catch (InvalidOperationException)
             {
-                bytesRead = 0;
+                bytesCount = 0;
             }
             if (bytesCount > 1)
             {

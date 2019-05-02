@@ -37,7 +37,7 @@ namespace SC_COM_Emulator
             ser.Serialize(writer, Fields);
             writer.Close();
         }
-        //Чтение насроек из файла
+        //Чтение настроек из файла
         public void ReadXml()
         {
             if (File.Exists(XMLFileName))
