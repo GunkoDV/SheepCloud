@@ -90,7 +90,7 @@
             this.Port_btn.Location = new System.Drawing.Point(16, 77);
             this.Port_btn.Name = "Port_btn";
             this.Port_btn.Size = new System.Drawing.Size(212, 45);
-            this.Port_btn.TabIndex = 3;
+            this.Port_btn.TabIndex = 0;
             this.Port_btn.Text = "button1";
             this.Port_btn.UseVisualStyleBackColor = true;
             this.Port_btn.Click += new System.EventHandler(this.Port_btn_Click);
@@ -266,16 +266,16 @@
             // Request_lbl
             // 
             this.Request_lbl.AutoSize = true;
-            this.Request_lbl.Location = new System.Drawing.Point(240, 178);
+            this.Request_lbl.Location = new System.Drawing.Point(177, 178);
             this.Request_lbl.Name = "Request_lbl";
-            this.Request_lbl.Size = new System.Drawing.Size(51, 20);
+            this.Request_lbl.Size = new System.Drawing.Size(18, 20);
             this.Request_lbl.TabIndex = 7;
-            this.Request_lbl.Text = "label5";
+            this.Request_lbl.Text = "0";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 212);
+            this.label6.Location = new System.Drawing.Point(259, 178);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(211, 20);
             this.label6.TabIndex = 8;
@@ -284,17 +284,17 @@
             // Response_label
             // 
             this.Response_label.AutoSize = true;
-            this.Response_label.Location = new System.Drawing.Point(240, 212);
+            this.Response_label.Location = new System.Drawing.Point(476, 178);
             this.Response_label.Name = "Response_label";
-            this.Response_label.Size = new System.Drawing.Size(51, 20);
+            this.Response_label.Size = new System.Drawing.Size(18, 20);
             this.Response_label.TabIndex = 9;
-            this.Response_label.Text = "label7";
+            this.Response_label.Text = "0";
             // 
             // COM_MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(715, 255);
+            this.ClientSize = new System.Drawing.Size(715, 205);
             this.Controls.Add(this.Response_label);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.Request_lbl);
@@ -310,6 +310,7 @@
             this.Name = "COM_MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Эмулятор COM устройствва";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.COM_MainForm_FormClosing);
             this.Load += new System.EventHandler(this.COM_MainForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

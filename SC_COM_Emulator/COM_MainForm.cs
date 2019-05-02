@@ -30,15 +30,28 @@ namespace SC_COM_Emulator
         private SettingsCOM COMsett;
         static SerialPort COMport;
         static bool fPortOpenState = false;
-        static byte InCount = 2;
         private Thread TransferThread;
         static int SleepTimer = 50;
         static uint RequestCounter = 0;
         static uint ResponseCounter = 0;
 
+        public delegate void ShowCounter();
+        public ShowCounter ShRqCntr;
+        public ShowCounter ShRpCntr;
+        public void ShowRequestCounterMetod()
+        {
+            Request_lbl.Text = RequestCounter.ToString();
+        }
+        public void ShowResponseCounterMetod()
+        {
+            Response_label.Text = ResponseCounter.ToString();
+        }
+
         public COM_MainForm()
         {
             InitializeComponent();
+            ShRqCntr = new ShowCounter(ShowRequestCounterMetod);
+            ShRpCntr = new ShowCounter(ShowResponseCounterMetod);
         }
 
         private void UpdatePortsList()
@@ -155,24 +168,30 @@ namespace SC_COM_Emulator
             UpdatePortsList();
         }
 
-        static byte [] ReadFromPort()
+        private byte [] ReadFromPort(out int bytesRead)
         {
             int bytesCount = 0;
+            bytesRead = 0;
             byte[] buff = new byte[2];
-            do
-            {
+            try
+            {           
                 bytesCount = COMport.BytesToRead;
-                if ((bytesCount % InCount) == 0)
-                {
-                    Array.Resize<byte>(ref buff, bytesCount);                    
-                    COMport.Read(buff, 0, bytesCount);
-                    return buff;
-                }
-            } while ((bytesCount % InCount) == 0);
-            RequestCounter++;
+            }
+            catch (InvalidOperationException)
+            {
+                bytesRead = 0;
+            }
+            if (bytesCount > 1)
+            {
+                COMport.Read(buff, 0, 2);
+                COMport.DiscardInBuffer();
+                bytesRead = 2;
+                RequestCounter++;
+                Request_lbl.Invoke(ShRqCntr);
+            }
             return buff;
         }
-        static void SendToPort(byte [] InArr)
+        private void SendToPort(byte [] InArr)
         {
             byte id = InArr[0];
             byte CountNumbers = InArr[1];
@@ -182,17 +201,21 @@ namespace SC_COM_Emulator
             for (int i=1; i<CountNumbers+1;i++)
             {
                 buff[i] = (byte)rand.Next();
-            }
+            }                     
             COMport.Write(buff, 0, buff.Length);
             ResponseCounter = ResponseCounter + CountNumbers + 1;
+            Response_label.Invoke(ShRpCntr);           
         }
 
-        static void PortDataExchange()
+        private void PortDataExchange()
         {            
-            while (!fPortOpenState)
+            while (fPortOpenState)
             {
-                byte[] buffIn = ReadFromPort();
-                SendToPort(buffIn);
+                byte[] buffIn = ReadFromPort(out int BR);
+                if (BR != 0)
+                {
+                    SendToPort(buffIn);
+                }
                 Thread.Sleep(SleepTimer);
             }            
         }
@@ -249,6 +272,14 @@ namespace SC_COM_Emulator
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void COM_MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (TransferThread.IsAlive)
+            {
+                TransferThread.Abort();
+            }            
         }
     }
 
