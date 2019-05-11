@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.Interval_TB = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.Port_TB = new System.Windows.Forms.TextBox();
             this.Address_TB = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -39,9 +40,7 @@
             this.ConnectSckt_btn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.Sckt_State_lbl = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.Request_Counter_lbl = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.PLCData_GB = new System.Windows.Forms.GroupBox();
             this.Current_val_lbl = new System.Windows.Forms.Label();
             this.COM_pack_counter_lbl = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
@@ -49,15 +48,15 @@
             this.COM_connect_stat_lbl = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.Test_timer = new System.Windows.Forms.Timer(this.components);
+            this.Stoptimer = new System.Windows.Forms.Timer(this.components);
+            this.PLC_chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.PLCData_GB.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PLC_chart)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.Interval_TB);
-            this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.Port_TB);
             this.groupBox1.Controls.Add(this.Address_TB);
             this.groupBox1.Controls.Add(this.label2);
@@ -66,27 +65,10 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Size = new System.Drawing.Size(217, 154);
+            this.groupBox1.Size = new System.Drawing.Size(217, 98);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Настройки подключения";
-            // 
-            // Interval_TB
-            // 
-            this.Interval_TB.Location = new System.Drawing.Point(76, 114);
-            this.Interval_TB.Name = "Interval_TB";
-            this.Interval_TB.Size = new System.Drawing.Size(134, 26);
-            this.Interval_TB.TabIndex = 5;
-            this.Interval_TB.Text = "100";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 91);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(168, 20);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "Интервал опроса, мс";
             // 
             // Port_TB
             // 
@@ -126,9 +108,9 @@
             // 
             // ConnectSckt_btn
             // 
-            this.ConnectSckt_btn.Location = new System.Drawing.Point(24, 176);
+            this.ConnectSckt_btn.Location = new System.Drawing.Point(13, 116);
             this.ConnectSckt_btn.Name = "ConnectSckt_btn";
-            this.ConnectSckt_btn.Size = new System.Drawing.Size(199, 44);
+            this.ConnectSckt_btn.Size = new System.Drawing.Size(217, 44);
             this.ConnectSckt_btn.TabIndex = 0;
             this.ConnectSckt_btn.Text = "button1";
             this.ConnectSckt_btn.UseVisualStyleBackColor = true;
@@ -137,72 +119,54 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 233);
+            this.label4.Location = new System.Drawing.Point(9, 175);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(203, 20);
-            this.label4.TabIndex = 2;
+            this.label4.TabIndex = 1;
             this.label4.Text = "Состояние подключения:";
             // 
             // Sckt_State_lbl
             // 
             this.Sckt_State_lbl.AutoSize = true;
-            this.Sckt_State_lbl.Location = new System.Drawing.Point(218, 233);
+            this.Sckt_State_lbl.Location = new System.Drawing.Point(9, 205);
             this.Sckt_State_lbl.Name = "Sckt_State_lbl";
             this.Sckt_State_lbl.Size = new System.Drawing.Size(51, 20);
-            this.Sckt_State_lbl.TabIndex = 3;
+            this.Sckt_State_lbl.TabIndex = 1;
             this.Sckt_State_lbl.Text = "label5";
             // 
-            // label5
+            // PLCData_GB
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(9, 263);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(181, 20);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "Отправлено запросов:";
-            // 
-            // Request_Counter_lbl
-            // 
-            this.Request_Counter_lbl.AutoSize = true;
-            this.Request_Counter_lbl.Location = new System.Drawing.Point(218, 263);
-            this.Request_Counter_lbl.Name = "Request_Counter_lbl";
-            this.Request_Counter_lbl.Size = new System.Drawing.Size(51, 20);
-            this.Request_Counter_lbl.TabIndex = 5;
-            this.Request_Counter_lbl.Text = "label6";
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.Current_val_lbl);
-            this.groupBox2.Controls.Add(this.COM_pack_counter_lbl);
-            this.groupBox2.Controls.Add(this.label11);
-            this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.COM_connect_stat_lbl);
-            this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Location = new System.Drawing.Point(237, 14);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(301, 154);
-            this.groupBox2.TabIndex = 6;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Данные регистров ПЛК";
+            this.PLCData_GB.Controls.Add(this.Current_val_lbl);
+            this.PLCData_GB.Controls.Add(this.COM_pack_counter_lbl);
+            this.PLCData_GB.Controls.Add(this.label11);
+            this.PLCData_GB.Controls.Add(this.label9);
+            this.PLCData_GB.Controls.Add(this.COM_connect_stat_lbl);
+            this.PLCData_GB.Controls.Add(this.label7);
+            this.PLCData_GB.Controls.Add(this.label6);
+            this.PLCData_GB.Location = new System.Drawing.Point(237, 14);
+            this.PLCData_GB.Name = "PLCData_GB";
+            this.PLCData_GB.Size = new System.Drawing.Size(301, 154);
+            this.PLCData_GB.TabIndex = 6;
+            this.PLCData_GB.TabStop = false;
+            this.PLCData_GB.Text = "Данные регистров ПЛК";
             // 
             // Current_val_lbl
             // 
             this.Current_val_lbl.AutoSize = true;
             this.Current_val_lbl.Location = new System.Drawing.Point(192, 114);
             this.Current_val_lbl.Name = "Current_val_lbl";
-            this.Current_val_lbl.Size = new System.Drawing.Size(51, 20);
+            this.Current_val_lbl.Size = new System.Drawing.Size(99, 20);
             this.Current_val_lbl.TabIndex = 7;
-            this.Current_val_lbl.Text = "label8";
+            this.Current_val_lbl.Text = "Нет данных";
             // 
             // COM_pack_counter_lbl
             // 
             this.COM_pack_counter_lbl.AutoSize = true;
             this.COM_pack_counter_lbl.Location = new System.Drawing.Point(192, 78);
             this.COM_pack_counter_lbl.Name = "COM_pack_counter_lbl";
-            this.COM_pack_counter_lbl.Size = new System.Drawing.Size(51, 20);
+            this.COM_pack_counter_lbl.Size = new System.Drawing.Size(99, 20);
             this.COM_pack_counter_lbl.TabIndex = 6;
-            this.COM_pack_counter_lbl.Text = "label8";
+            this.COM_pack_counter_lbl.Text = "Нет данных";
             // 
             // label11
             // 
@@ -227,9 +191,9 @@
             this.COM_connect_stat_lbl.AutoSize = true;
             this.COM_connect_stat_lbl.Location = new System.Drawing.Point(192, 44);
             this.COM_connect_stat_lbl.Name = "COM_connect_stat_lbl";
-            this.COM_connect_stat_lbl.Size = new System.Drawing.Size(51, 20);
+            this.COM_connect_stat_lbl.Size = new System.Drawing.Size(99, 20);
             this.COM_connect_stat_lbl.TabIndex = 2;
-            this.COM_connect_stat_lbl.Text = "label8";
+            this.COM_connect_stat_lbl.Text = "Нет данных";
             // 
             // label7
             // 
@@ -249,18 +213,35 @@
             this.label6.TabIndex = 0;
             this.label6.Text = "Состояние подключения ";
             // 
-            // Test_timer
+            // Stoptimer
             // 
-            this.Test_timer.Tick += new System.EventHandler(this.Test_timer_Tick);
+            this.Stoptimer.Interval = 500;
+            this.Stoptimer.Tick += new System.EventHandler(this.Stoptimer_Tick);
+            // 
+            // PLC_chart
+            // 
+            chartArea2.Name = "ChartArea1";
+            this.PLC_chart.ChartAreas.Add(chartArea2);
+            legend2.Enabled = false;
+            legend2.Name = "Legend1";
+            this.PLC_chart.Legends.Add(legend2);
+            this.PLC_chart.Location = new System.Drawing.Point(237, 175);
+            this.PLC_chart.Name = "PLC_chart";
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.PLC_chart.Series.Add(series2);
+            this.PLC_chart.Size = new System.Drawing.Size(1182, 300);
+            this.PLC_chart.TabIndex = 7;
+            this.PLC_chart.Text = "chart1";
             // 
             // Gate_MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(550, 302);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.Request_Counter_lbl);
-            this.Controls.Add(this.label5);
+            this.ClientSize = new System.Drawing.Size(1451, 557);
+            this.Controls.Add(this.PLC_chart);
+            this.Controls.Add(this.PLCData_GB);
             this.Controls.Add(this.Sckt_State_lbl);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.ConnectSckt_btn);
@@ -270,11 +251,13 @@
             this.Name = "Gate_MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Шлюз сбора данных с ПЛК";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Gate_MainForm_FormClosing);
             this.Load += new System.EventHandler(this.Gate_MainForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.PLCData_GB.ResumeLayout(false);
+            this.PLCData_GB.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PLC_chart)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -287,14 +270,10 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox Port_TB;
         private System.Windows.Forms.TextBox Address_TB;
-        private System.Windows.Forms.TextBox Interval_TB;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button ConnectSckt_btn;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label Sckt_State_lbl;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label Request_Counter_lbl;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox PLCData_GB;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label COM_connect_stat_lbl;
@@ -302,7 +281,8 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label Current_val_lbl;
         private System.Windows.Forms.Label COM_pack_counter_lbl;
-        private System.Windows.Forms.Timer Test_timer;
+        private System.Windows.Forms.Timer Stoptimer;
+        private System.Windows.Forms.DataVisualization.Charting.Chart PLC_chart;
     }
 }
 
