@@ -29,14 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.Port_TB = new System.Windows.Forms.TextBox();
-            this.Address_TB = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.ConnectSckt_btn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.Sckt_State_lbl = new System.Windows.Forms.Label();
@@ -50,65 +45,14 @@
             this.label6 = new System.Windows.Forms.Label();
             this.Stoptimer = new System.Windows.Forms.Timer(this.components);
             this.PLC_chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.groupBox1.SuspendLayout();
+            this.Settings_btn = new System.Windows.Forms.Button();
             this.PLCData_GB.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PLC_chart)).BeginInit();
             this.SuspendLayout();
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.Port_TB);
-            this.groupBox1.Controls.Add(this.Address_TB);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(13, 14);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Size = new System.Drawing.Size(217, 98);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Настройки подключения";
-            // 
-            // Port_TB
-            // 
-            this.Port_TB.Location = new System.Drawing.Point(76, 56);
-            this.Port_TB.Name = "Port_TB";
-            this.Port_TB.Size = new System.Drawing.Size(134, 26);
-            this.Port_TB.TabIndex = 3;
-            this.Port_TB.Text = "502";
-            // 
-            // Address_TB
-            // 
-            this.Address_TB.Location = new System.Drawing.Point(76, 24);
-            this.Address_TB.Name = "Address_TB";
-            this.Address_TB.Size = new System.Drawing.Size(134, 26);
-            this.Address_TB.TabIndex = 2;
-            this.Address_TB.Text = "10.0.6.10";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 59);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(52, 20);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "Порт:";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(8, 27);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(61, 20);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Адрес:";
-            // 
             // ConnectSckt_btn
             // 
-            this.ConnectSckt_btn.Location = new System.Drawing.Point(13, 116);
+            this.ConnectSckt_btn.Location = new System.Drawing.Point(12, 14);
             this.ConnectSckt_btn.Name = "ConnectSckt_btn";
             this.ConnectSckt_btn.Size = new System.Drawing.Size(217, 44);
             this.ConnectSckt_btn.TabIndex = 0;
@@ -119,7 +63,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 175);
+            this.label4.Location = new System.Drawing.Point(12, 115);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(203, 20);
             this.label4.TabIndex = 1;
@@ -128,7 +72,7 @@
             // Sckt_State_lbl
             // 
             this.Sckt_State_lbl.AutoSize = true;
-            this.Sckt_State_lbl.Location = new System.Drawing.Point(9, 205);
+            this.Sckt_State_lbl.Location = new System.Drawing.Point(12, 148);
             this.Sckt_State_lbl.Name = "Sckt_State_lbl";
             this.Sckt_State_lbl.Size = new System.Drawing.Size(51, 20);
             this.Sckt_State_lbl.TabIndex = 1;
@@ -143,7 +87,7 @@
             this.PLCData_GB.Controls.Add(this.COM_connect_stat_lbl);
             this.PLCData_GB.Controls.Add(this.label7);
             this.PLCData_GB.Controls.Add(this.label6);
-            this.PLCData_GB.Location = new System.Drawing.Point(237, 14);
+            this.PLCData_GB.Location = new System.Drawing.Point(889, 14);
             this.PLCData_GB.Name = "PLCData_GB";
             this.PLCData_GB.Size = new System.Drawing.Size(301, 154);
             this.PLCData_GB.TabIndex = 6;
@@ -220,32 +164,42 @@
             // 
             // PLC_chart
             // 
-            chartArea2.Name = "ChartArea1";
-            this.PLC_chart.ChartAreas.Add(chartArea2);
-            legend2.Enabled = false;
-            legend2.Name = "Legend1";
-            this.PLC_chart.Legends.Add(legend2);
-            this.PLC_chart.Location = new System.Drawing.Point(237, 175);
+            chartArea1.Name = "ChartArea1";
+            this.PLC_chart.ChartAreas.Add(chartArea1);
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            this.PLC_chart.Legends.Add(legend1);
+            this.PLC_chart.Location = new System.Drawing.Point(12, 174);
             this.PLC_chart.Name = "PLC_chart";
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.PLC_chart.Series.Add(series2);
-            this.PLC_chart.Size = new System.Drawing.Size(1182, 300);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.PLC_chart.Series.Add(series1);
+            this.PLC_chart.Size = new System.Drawing.Size(1182, 376);
             this.PLC_chart.TabIndex = 7;
             this.PLC_chart.Text = "chart1";
+            // 
+            // Settings_btn
+            // 
+            this.Settings_btn.Location = new System.Drawing.Point(12, 68);
+            this.Settings_btn.Name = "Settings_btn";
+            this.Settings_btn.Size = new System.Drawing.Size(217, 44);
+            this.Settings_btn.TabIndex = 8;
+            this.Settings_btn.Text = "Настройки";
+            this.Settings_btn.UseVisualStyleBackColor = true;
+            this.Settings_btn.Click += new System.EventHandler(this.Settings_btn_Click);
             // 
             // Gate_MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1451, 557);
+            this.ClientSize = new System.Drawing.Size(1202, 557);
+            this.Controls.Add(this.Settings_btn);
             this.Controls.Add(this.PLC_chart);
             this.Controls.Add(this.PLCData_GB);
             this.Controls.Add(this.Sckt_State_lbl);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.ConnectSckt_btn);
-            this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Gate_MainForm";
@@ -253,8 +207,6 @@
             this.Text = "Шлюз сбора данных с ПЛК";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Gate_MainForm_FormClosing);
             this.Load += new System.EventHandler(this.Gate_MainForm_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.PLCData_GB.ResumeLayout(false);
             this.PLCData_GB.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PLC_chart)).EndInit();
@@ -264,12 +216,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox Port_TB;
-        private System.Windows.Forms.TextBox Address_TB;
         private System.Windows.Forms.Button ConnectSckt_btn;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label Sckt_State_lbl;
@@ -283,6 +229,7 @@
         private System.Windows.Forms.Label COM_pack_counter_lbl;
         private System.Windows.Forms.Timer Stoptimer;
         private System.Windows.Forms.DataVisualization.Charting.Chart PLC_chart;
+        private System.Windows.Forms.Button Settings_btn;
     }
 }
 

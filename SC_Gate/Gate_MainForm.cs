@@ -19,15 +19,7 @@ namespace SC_Gate
 
     public partial class Gate_MainForm : Form
     {
-        const string ScktDiscntMess = "Нет подключения";
-        const string ScktCntMess = "Подключение создано";
-        const string ScktClsngMess = "Закрытие подключения";
-        const string ConnectScktBtnText = "Подключиться";
-        const string DisconnectScktBtnText = "Отключиться";
-        const string COMDevConnectOK = "OK";
-        const string COMDevConnectErr = "Error";
-        const string ErrorMessCaption = "Ошибка";
-        const string IncorrectPortMess = "Некорректный номер порта";
+        
         const int ModbusFuncCode = 3;       // Код функции Modbus (чтение регистров)
 
         private bool fPLCConnected = false;
@@ -39,27 +31,29 @@ namespace SC_Gate
 
         private double[] X_arr;
         private int[] Summ_arr;
-        private int NHist;
         private DateTime ReportDateTime;
 
+        public ProgramSettings ProgSett = new ProgramSettings();
+
+        private SettingsForm SettForm = new SettingsForm();
         public delegate void ShowData();
         public ShowData showPLCPack;
         public ShowData showDisconnect;
 
         private void ShowScktDisconnect()
         {
-            Sckt_State_lbl.Text = ScktDiscntMess;
-            ConnectSckt_btn.Text = ConnectScktBtnText;
+            Sckt_State_lbl.Text = StrNMess.ScktDiscntMess;
+            ConnectSckt_btn.Text = StrNMess.ConnectScktBtnText;
         }
 
         private void ShowScktConnect()
         {
-            Sckt_State_lbl.Text = ScktCntMess;
-            ConnectSckt_btn.Text = DisconnectScktBtnText;
+            Sckt_State_lbl.Text = StrNMess.ScktCntMess;
+            ConnectSckt_btn.Text = StrNMess.DisconnectScktBtnText;
         }
         private void ShowScktClosing()
         {
-            StringBuilder sb = new StringBuilder(ScktClsngMess);
+            StringBuilder sb = new StringBuilder(StrNMess.ScktClsngMess);
             for (byte i=0; i< StopCounter; i++)
             {
                 sb.Append(".");
@@ -74,10 +68,10 @@ namespace SC_Gate
             switch (plcdp.ConnectionState)
             {
                 case 0:
-                    COM_connect_stat_lbl.Text = COMDevConnectOK;
+                    COM_connect_stat_lbl.Text = StrNMess.COMDevConnectOK;
                     break;
                 default:
-                    COM_connect_stat_lbl.Text = COMDevConnectErr;
+                    COM_connect_stat_lbl.Text = StrNMess.COMDevConnectErr;
                     break;
             }
             COM_pack_counter_lbl.Text = plcdp.CounterPack.ToString();
@@ -87,7 +81,7 @@ namespace SC_Gate
                 PrintHistogram(plcdp);
             }
             TimeSpan RepInterval = DateTime.Now - ReportDateTime;
-            if (RepInterval.TotalMinutes>1)
+            if (RepInterval.TotalMinutes > ProgSett.ProgSettFlds.RepInterval)
             {              
                 GetReport();
                 ReportDateTime = DateTime.Now;
@@ -115,11 +109,13 @@ namespace SC_Gate
                 jsonFormatter.WriteObject(fs, dataPoints);
             }
 
-            Report Rep = new Report();
-            Rep.BeginDT = ReportDateTime;
-            Rep.EndDT = DateTime.Now;
-            Rep.PackCount = PackCount;
-            Rep.FileName = FileName + ".json";
+            Report Rep = new Report
+            {
+                BeginDT = ReportDateTime,
+                EndDT = DateTime.Now,
+                PackCount = PackCount,
+                FileName = FileName + ".json"
+            };
             XmlSerializer ser = new XmlSerializer(typeof(Report));
             TextWriter writer = new StreamWriter(FileName+".xml");
             ser.Serialize(writer, Rep);
@@ -129,7 +125,7 @@ namespace SC_Gate
             PLCPackBuff.Clear();
             Monitor.Exit(PLCPackBuff);
 
-            for (int j =0; j < NHist; j++)
+            for (int j =0; j < ProgSett.ProgSettFlds.NHist; j++)
             {
                 Summ_arr[j] = 0;
             }
@@ -137,7 +133,7 @@ namespace SC_Gate
 
         private void PrintHistogram(PLCDataPack plcdp)
         {                                                
-            for (int i = 0; i < NHist; i++)
+            for (int i = 0; i < ProgSett.ProgSettFlds.NHist; i++)
                 {
                     if ((plcdp.CurrValue >= X_arr[i]) && (plcdp.CurrValue < X_arr[i + 1]))
                     {
@@ -146,34 +142,32 @@ namespace SC_Gate
                 }
             PLC_chart.Series["Series1"].Points.Clear();
             int ValueCount = PLCPackBuff.Count;
-            for (int i = 0; i < NHist; i++)
+            for (int i = 0; i < ProgSett.ProgSettFlds.NHist; i++)
             {                
                 PLC_chart.Series["Series1"].Points.AddXY(X_arr[i]+4, (Summ_arr[i]+0.0)/ValueCount);
             }            
         }
 
-
-
         private bool ConnectToPLC()
         {
             ShowScktDisconnect();
-            bool fPortCorect = Int32.TryParse(Port_TB.Text, out int port);
-            fPortCorect = fPortCorect && (port >= IPEndPoint.MinPort) && (port <= IPEndPoint.MaxPort);
+            int port = ProgSett.ProgSettFlds.Port;            
+            bool fPortCorect = (port >= IPEndPoint.MinPort) && (port <= IPEndPoint.MaxPort);
             if (!fPortCorect)
             {
-                MessageBox.Show(IncorrectPortMess, ErrorMessCaption,
+                MessageBox.Show(StrNMess.IncorrectPortMess, StrNMess.ErrorMessCaption,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             try
             {
-                PLCSckt = new TcpClient(Address_TB.Text, port);
+                PLCSckt = new TcpClient(ProgSett.ProgSettFlds.HostName, port);
                 ShowScktConnect();
                 return true;
             }
             catch (SocketException e)
             {
-                MessageBox.Show(e.Message, ErrorMessCaption,
+                MessageBox.Show(e.Message, StrNMess.ErrorMessCaption,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }           
@@ -208,7 +202,7 @@ namespace SC_Gate
             }
             catch (Exception ex)
             {               
-                MessageBox.Show(ex.Message, ErrorMessCaption,
+                MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Invoke(showDisconnect);
                 return false;
@@ -231,7 +225,7 @@ namespace SC_Gate
             catch (Exception ex)
             {
                 fPLCConnected = false;
-                MessageBox.Show(ex.Message, ErrorMessCaption,
+                MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Invoke(showDisconnect);
             }        
@@ -269,7 +263,10 @@ namespace SC_Gate
                     Monitor.Enter(PLCPackBuff);
                     PLCPackBuff.Add(NewPLCdp);
                     Monitor.Exit(PLCPackBuff);
-                    Invoke(showPLCPack);
+                    if (!this.IsDisposed)
+                    {
+                        Invoke(showPLCPack);
+                    }
                 }                            
             }
         }
@@ -286,18 +283,21 @@ namespace SC_Gate
             showPLCPack = new ShowData(ShowPLCPack);
             showDisconnect = new ShowData(ShowScktDisconnect);
 
-            ReportDateTime = DateTime.Now;
-            NHist = 64;
-            X_arr = new double[NHist + 1];
-            Summ_arr = new int[NHist];
-            for (int i = 0; i < NHist+1; i++)
+            ReportDateTime = DateTime.Now;            
+            X_arr = new double[ProgSett.ProgSettFlds.NHist + 1];
+            Summ_arr = new int[ProgSett.ProgSettFlds.NHist];
+            for (int i = 0; i < ProgSett.ProgSettFlds.NHist + 1; i++)
             {
-                X_arr[i] = i * (256/NHist);
+                X_arr[i] = i * (256/ ProgSett.ProgSettFlds.NHist);
             }
 
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Minimum = 0;
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Maximum = 255;
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 50;
+            PLC_chart.ChartAreas["ChartArea1"].AxisX.Maximum = X_arr[ProgSett.ProgSettFlds.NHist];
+            PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 25;
+
+            SettForm.Owner = this;
+            ProgSett.XMLFileName = Environment.CurrentDirectory + "\\Settings.xml";
+            ProgSett.ReadFields();
         }
 
         private void ConnectSckt_btn_Click(object sender, EventArgs e)
@@ -341,6 +341,12 @@ namespace SC_Gate
                 ConnectSckt_btn.Enabled = true;
                 ConnectSckt_btn.Select();
             }
+        }
+
+        private void Settings_btn_Click(object sender, EventArgs e)
+        {
+            SettForm.ShowDialog();
+            
         }
     }
 }
