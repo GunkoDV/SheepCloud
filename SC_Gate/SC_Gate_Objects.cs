@@ -7,6 +7,8 @@ using System.Runtime;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Threading;
 
 namespace SC_Gate
 {
@@ -92,5 +94,47 @@ namespace SC_Gate
         public const string COMDevConnectErr = "Error";
         public const string ErrorMessCaption = "Ошибка";
         public const string IncorrectPortMess = "Некорректный номер порта";
+    }
+    class DataStorage
+    {
+        public List<PLCDataPack> PLCPackBuff = new List<PLCDataPack>();
+        
+        public void GetReport(DateTime ReportDateTime)
+        {
+            int PackCount = PLCPackBuff.Count;
+            DataPoint[] dataPoints = new DataPoint[PackCount];
+            int i = 0;
+            foreach (PLCDataPack plcdp in PLCPackBuff)
+            {
+                i++;
+                DataPoint dp = new DataPoint(i, plcdp.CurrValue);
+                dataPoints[i - 1] = dp;
+            }
+            DateTime DTRep = DateTime.Now;
+
+            string FileName = Environment.CurrentDirectory.ToString() + "\\Reports\\" + DTRep.Year.ToString() + "_" +
+                DTRep.Month.ToString() + "_" + DTRep.Day.ToString() + "_" + DTRep.Hour.ToString() + "_" + DTRep.Minute.ToString();
+            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(DataPoint[]));
+            using (FileStream fs = new FileStream(FileName + ".json", FileMode.OpenOrCreate))
+            {
+                jsonFormatter.WriteObject(fs, dataPoints);
+            }
+
+            Report Rep = new Report
+            {
+                BeginDT = ReportDateTime,
+                EndDT = DateTime.Now,
+                PackCount = PackCount,
+                FileName = FileName + ".json"
+            };
+            XmlSerializer ser = new XmlSerializer(typeof(Report));
+            TextWriter writer = new StreamWriter(FileName + ".xml");
+            ser.Serialize(writer, Rep);
+            writer.Close();
+
+            Monitor.Enter(PLCPackBuff);
+            PLCPackBuff.Clear();
+            Monitor.Exit(PLCPackBuff);
+        }
     }
 }

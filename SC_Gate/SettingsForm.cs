@@ -67,6 +67,7 @@ namespace SC_Gate
         private void Cancel_btn_Click(object sender, EventArgs e)
         {
             LoadSettings();
+            Close();
         }
     }
 }

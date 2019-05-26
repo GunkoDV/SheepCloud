@@ -27,7 +27,8 @@ namespace SC_Gate
         TcpClient PLCSckt;
         private Thread ScktThread;
 
-        private static List<PLCDataPack> PLCPackBuff;
+        //        private static List<PLCDataPack> PLCPackBuff;
+        private static DataStorage DataBuff;
 
         private double[] X_arr;
         private int[] Summ_arr;
@@ -64,7 +65,7 @@ namespace SC_Gate
 
         public void ShowPLCPack()
         {
-            PLCDataPack plcdp = PLCPackBuff.Last();
+            PLCDataPack plcdp = DataBuff.PLCPackBuff.Last();
             switch (plcdp.ConnectionState)
             {
                 case 0:
@@ -81,53 +82,14 @@ namespace SC_Gate
                 PrintHistogram(plcdp);
             }
             TimeSpan RepInterval = DateTime.Now - ReportDateTime;
-            if (RepInterval.TotalMinutes > ProgSett.ProgSettFlds.RepInterval)
-            {              
-                GetReport();
+            if (RepInterval.TotalMinutes >= ProgSett.ProgSettFlds.RepInterval)
+            {
+                DataBuff.GetReport(ReportDateTime);
                 ReportDateTime = DateTime.Now;
-            }
-        }
-
-        private void GetReport()
-        {
-            int PackCount = PLCPackBuff.Count;
-            DataPoint[] dataPoints = new DataPoint[PackCount];
-            int i = 0;
-            foreach (PLCDataPack plcdp in PLCPackBuff)
-            {
-                i++;
-                DataPoint dp = new DataPoint(i, plcdp.CurrValue);
-                dataPoints[i - 1] = dp;
-            }
-            DateTime DTRep = DateTime.Now;
-
-            string FileName = Environment.CurrentDirectory.ToString() + "\\Reports\\" + DTRep.Year.ToString() + "_" +
-                DTRep.Month.ToString() + "_" + DTRep.Day.ToString() + "_"+ DTRep.Hour.ToString() + "_" + DTRep.Minute.ToString();
-            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(DataPoint[]));
-            using (FileStream fs = new FileStream(FileName+ ".json", FileMode.OpenOrCreate)) 
-            {
-                jsonFormatter.WriteObject(fs, dataPoints);
-            }
-
-            Report Rep = new Report
-            {
-                BeginDT = ReportDateTime,
-                EndDT = DateTime.Now,
-                PackCount = PackCount,
-                FileName = FileName + ".json"
-            };
-            XmlSerializer ser = new XmlSerializer(typeof(Report));
-            TextWriter writer = new StreamWriter(FileName+".xml");
-            ser.Serialize(writer, Rep);
-            writer.Close();
-
-            Monitor.Enter(PLCPackBuff);
-            PLCPackBuff.Clear();
-            Monitor.Exit(PLCPackBuff);
-
-            for (int j =0; j < ProgSett.ProgSettFlds.NHist; j++)
-            {
-                Summ_arr[j] = 0;
+                for (int j = 0; j < Summ_arr.Max(); j++)
+                {
+                    Summ_arr[j] = 0;
+                }
             }
         }
 
@@ -141,10 +103,10 @@ namespace SC_Gate
                     }
                 }
             PLC_chart.Series["Series1"].Points.Clear();
-            int ValueCount = PLCPackBuff.Count;
+            int ValueCount = DataBuff.PLCPackBuff.Count;
             for (int i = 0; i < ProgSett.ProgSettFlds.NHist; i++)
             {                
-                PLC_chart.Series["Series1"].Points.AddXY(X_arr[i]+4, (Summ_arr[i]+0.0)/ValueCount);
+                PLC_chart.Series["Series1"].Points.AddXY(X_arr[i], (Summ_arr[i]+0.0)/ValueCount);
             }            
         }
 
@@ -260,10 +222,10 @@ namespace SC_Gate
                 {
                     PLCDataPack NewPLCdp = new PLCDataPack();
                     NewPLCdp.CopyFrom(dataPack);
-                    Monitor.Enter(PLCPackBuff);
-                    PLCPackBuff.Add(NewPLCdp);
-                    Monitor.Exit(PLCPackBuff);
-                    if (!this.IsDisposed)
+                    Monitor.Enter(DataBuff.PLCPackBuff);
+                    DataBuff.PLCPackBuff.Add(NewPLCdp);
+                    Monitor.Exit(DataBuff.PLCPackBuff);
+                    if (fPLCConnected)
                     {
                         Invoke(showPLCPack);
                     }
@@ -276,28 +238,36 @@ namespace SC_Gate
             InitializeComponent();
         }   
 
-        private void Gate_MainForm_Load(object sender, EventArgs e)
+        private void HistSetting()
         {
-            PLCPackBuff = new List<PLCDataPack>();
-            ShowScktDisconnect();                        
-            showPLCPack = new ShowData(ShowPLCPack);
-            showDisconnect = new ShowData(ShowScktDisconnect);
-
-            ReportDateTime = DateTime.Now;            
             X_arr = new double[ProgSett.ProgSettFlds.NHist + 1];
             Summ_arr = new int[ProgSett.ProgSettFlds.NHist];
             for (int i = 0; i < ProgSett.ProgSettFlds.NHist + 1; i++)
             {
-                X_arr[i] = i * (256/ ProgSett.ProgSettFlds.NHist);
+                X_arr[i] = i * (256 / ProgSett.ProgSettFlds.NHist);
             }
 
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Minimum = 0;
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Maximum = X_arr[ProgSett.ProgSettFlds.NHist];
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 25;
+            PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 16;
+        }
 
-            SettForm.Owner = this;
+        private void Gate_MainForm_Load(object sender, EventArgs e)
+        {
+            DataBuff = new DataStorage
+            {
+                PLCPackBuff = new List<PLCDataPack>()
+            };
+            ShowScktDisconnect();                        
+            showPLCPack = new ShowData(ShowPLCPack);
+            showDisconnect = new ShowData(ShowScktDisconnect);
+
+            ReportDateTime = DateTime.Now;
             ProgSett.XMLFileName = Environment.CurrentDirectory + "\\Settings.xml";
             ProgSett.ReadFields();
+            HistSetting();
+
+            SettForm.Owner = this;            
         }
 
         private void ConnectSckt_btn_Click(object sender, EventArgs e)
@@ -307,6 +277,7 @@ namespace SC_Gate
                 fPLCConnected = ConnectToPLC();
                 if (fPLCConnected)
                 {
+                    Settings_btn.Enabled = false;
                     ScktThread = new Thread(RequestForPLC);
                     ScktThread.Start();
                 }
@@ -324,29 +295,30 @@ namespace SC_Gate
             if (fPLCConnected)
             {
                 fPLCConnected = false;
-                Stoptimer.Enabled = true;
+                ScktThread.Join();
             }
         }
 
         private void Stoptimer_Tick(object sender, EventArgs e)
         {
+            PLCSckt.Close();
             StopCounter += 1;
             ShowScktClosing();
             if (StopCounter == 4)
             {
                 StopCounter = 0;
-                Stoptimer.Enabled = false;
-                PLCSckt.Close();
+                Stoptimer.Enabled = false;                
                 ShowScktDisconnect();
                 ConnectSckt_btn.Enabled = true;
                 ConnectSckt_btn.Select();
+                Settings_btn.Enabled = true;
             }
         }
 
         private void Settings_btn_Click(object sender, EventArgs e)
         {
             SettForm.ShowDialog();
-            
+            HistSetting();
         }
     }
 }
