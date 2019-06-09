@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace SC_Gate
 {
-    class PLCDataPack
+    public class PLCDataPack
     {
         public byte ConnectionState = 1;
         public uint CounterPack = 0;

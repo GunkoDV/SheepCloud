@@ -54,6 +54,7 @@
     <Compile Include="Gate_MainForm.Designer.cs">
       <DependentUpon>Gate_MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PLCSocket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SC_Gate_Objects.cs" />

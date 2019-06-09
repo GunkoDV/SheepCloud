@@ -15,12 +15,11 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 
 namespace SC_Gate
-{   
-
+{
+    
     public partial class Gate_MainForm : Form
     {
-        
-        const int ModbusFuncCode = 3;       // Код функции Modbus (чтение регистров)
+        public const int ModbusFuncCode = 3;       // Код функции Modbus (чтение регистров)
 
         private bool fPLCConnected = false;
         private byte StopCounter = 0;
@@ -28,7 +27,7 @@ namespace SC_Gate
         private Thread ScktThread;
 
         //        private static List<PLCDataPack> PLCPackBuff;
-        private static DataStorage DataBuff;
+        private DataStorage DataBuff;
 
         private double[] X_arr;
         private int[] Summ_arr;
@@ -41,16 +40,22 @@ namespace SC_Gate
         public ShowData showPLCPack;
         public ShowData showDisconnect;
 
+
+        private PLCSocket SheepSocket;
+       
+
         private void ShowScktDisconnect()
         {
             Sckt_State_lbl.Text = StrNMess.ScktDiscntMess;
             ConnectSckt_btn.Text = StrNMess.ConnectScktBtnText;
+            Settings_btn.Enabled = true;
         }
 
         private void ShowScktConnect()
         {
             Sckt_State_lbl.Text = StrNMess.ScktCntMess;
             ConnectSckt_btn.Text = StrNMess.DisconnectScktBtnText;
+            Settings_btn.Enabled = false;
         }
         private void ShowScktClosing()
         {
@@ -109,6 +114,8 @@ namespace SC_Gate
                 PLC_chart.Series["Series1"].Points.AddXY(X_arr[i], (Summ_arr[i]+0.0)/ValueCount);
             }            
         }
+
+
 
         private bool ConnectToPLC()
         {
@@ -233,6 +240,12 @@ namespace SC_Gate
             }
         }
         
+        private void NewData(PLCDataPack dataPack)
+        {
+            DataBuff.PLCPackBuff.Add(dataPack);
+            ShowPLCPack();
+        }
+
         public Gate_MainForm()
         {
             InitializeComponent();
@@ -267,7 +280,8 @@ namespace SC_Gate
             ProgSett.ReadFields();
             HistSetting();
 
-            SettForm.Owner = this;            
+            SettForm.Owner = this;
+            
         }
 
         private void ConnectSckt_btn_Click(object sender, EventArgs e)
@@ -276,8 +290,7 @@ namespace SC_Gate
             {
                 fPLCConnected = ConnectToPLC();
                 if (fPLCConnected)
-                {
-                    Settings_btn.Enabled = false;
+                {                    
                     ScktThread = new Thread(RequestForPLC);
                     ScktThread.Start();
                 }
@@ -311,7 +324,6 @@ namespace SC_Gate
                 ShowScktDisconnect();
                 ConnectSckt_btn.Enabled = true;
                 ConnectSckt_btn.Select();
-                Settings_btn.Enabled = true;
             }
         }
 
@@ -320,5 +332,20 @@ namespace SC_Gate
             SettForm.ShowDialog();
             HistSetting();
         }
+
+        private void Test_button_Click(object sender, EventArgs e)
+        {
+            SheepSocket = new PLCSocket(ProgSett.ProgSettFlds)
+            {
+                ShowConnect = new DisplayData(ShowScktConnect),
+                ShowDisconnect = new DisplayData(ShowScktDisconnect),
+                ExportData = new AddData(NewData)
+            };
+
+            SheepSocket.Start(this);          
+        }
+
+        
+        
     }
 }
