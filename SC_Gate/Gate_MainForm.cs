@@ -21,12 +21,7 @@ namespace SC_Gate
     {
         public const int ModbusFuncCode = 3;       // Код функции Modbus (чтение регистров)
 
-        private bool fPLCConnected = false;
-        private byte StopCounter = 0;
-        TcpClient PLCSckt;
-        private Thread ScktThread;
-
-        //        private static List<PLCDataPack> PLCPackBuff;
+        private bool fPLCConnected = false;        
         private DataStorage DataBuff;
 
         private double[] X_arr;
@@ -35,10 +30,7 @@ namespace SC_Gate
 
         public ProgramSettings ProgSett = new ProgramSettings();
 
-        private SettingsForm SettForm = new SettingsForm();
-        public delegate void ShowData();
-        public ShowData showPLCPack;
-        public ShowData showDisconnect;
+        private SettingsForm SettForm = new SettingsForm();      
 
 
         private PLCSocket SheepSocket;
@@ -49,24 +41,15 @@ namespace SC_Gate
             Sckt_State_lbl.Text = StrNMess.ScktDiscntMess;
             ConnectSckt_btn.Text = StrNMess.ConnectScktBtnText;
             Settings_btn.Enabled = true;
+            fPLCConnected = false;
         }
-
         private void ShowScktConnect()
         {
             Sckt_State_lbl.Text = StrNMess.ScktCntMess;
             ConnectSckt_btn.Text = StrNMess.DisconnectScktBtnText;
             Settings_btn.Enabled = false;
-        }
-        private void ShowScktClosing()
-        {
-            StringBuilder sb = new StringBuilder(StrNMess.ScktClsngMess);
-            for (byte i=0; i< StopCounter; i++)
-            {
-                sb.Append(".");
-            }
-            Sckt_State_lbl.Text = sb.ToString();
-        }
-
+            fPLCConnected = true;
+        }       
 
         public void ShowPLCPack()
         {
@@ -113,132 +96,7 @@ namespace SC_Gate
             {                
                 PLC_chart.Series["Series1"].Points.AddXY(X_arr[i], (Summ_arr[i]+0.0)/ValueCount);
             }            
-        }
-
-
-
-        private bool ConnectToPLC()
-        {
-            ShowScktDisconnect();
-            int port = ProgSett.ProgSettFlds.Port;            
-            bool fPortCorect = (port >= IPEndPoint.MinPort) && (port <= IPEndPoint.MaxPort);
-            if (!fPortCorect)
-            {
-                MessageBox.Show(StrNMess.IncorrectPortMess, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            try
-            {
-                PLCSckt = new TcpClient(ProgSett.ProgSettFlds.HostName, port);
-                ShowScktConnect();
-                return true;
-            }
-            catch (SocketException e)
-            {
-                MessageBox.Show(e.Message, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }           
-        }
-
-        private byte [] GetRequest()        // Команда-запрос по протоколу ModbusTCP на чтение регистров ПЛК
-        {
-            byte[] command = new byte[12];
-            command[0] = 0;                 // ID 
-            command[1] = 1;                 // ID пакета (в проекте не используется)
-            command[2] = 0;                 // ID  
-            command[3] = 0;                 // ID протокола
-            command[4] = 0;                 // Длинна
-            command[5] = 6;                 // Длинна пакета            
-            command[6] = 1;                 // ID узла (настраивается на ПЛК)
-            command[7] = ModbusFuncCode;    // Код функции Modbus (чтение регистров)             
-            command[8] = 0;                 // Начальный  
-            command[9] = 0;                 // адрес регистров
-            command[10] = 0;                // Кол-во
-            command[11] = 2;                // регистров для чтения    
-            return command;
-        }
-
-        private bool SendRequest()
-        {
-            byte[] command = GetRequest();        
-            try
-            {
-                NetworkStream tcpstream = PLCSckt.GetStream();
-                tcpstream.Write(command, 0, command.Length);
-                return true;
-            }
-            catch (Exception ex)
-            {               
-                MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Invoke(showDisconnect);
-                return false;
-            }
-        }
-
-        private byte[] ReceiveData()
-        {           
-            byte[] buff = new byte[1024];
-            int bytes;
-            try
-            {
-                NetworkStream tcpstream = PLCSckt.GetStream();
-                do
-                {
-                    bytes = tcpstream.Read(buff, 0, buff.Length);
-
-                } while (tcpstream.DataAvailable);
-            }
-            catch (Exception ex)
-            {
-                fPLCConnected = false;
-                MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Invoke(showDisconnect);
-            }        
-            return buff;         
         }       
-
-        private void RequestForPLC()
-        {
-            PLCDataPack dataPack = new PLCDataPack();
-            while (fPLCConnected)
-            {
-                byte[] buff = new byte[1024];
-                if (SendRequest())
-                {
-                    Thread.Sleep(1);
-                    buff = ReceiveData();
-                }
-                bool fPackOK = false;
-                if (buff[7] == ModbusFuncCode)      // Если ответ Modbus корректен парсим
-                {
-                    uint PackCount = (uint)(buff[9] * 256) + buff[10];
-                    byte Devstate = buff[12];
-                    if ((PackCount != dataPack.CounterPack) || (Devstate != dataPack.ConnectionState))  // Если данные регистров изменились, то новый пакет
-                    {
-                        dataPack.CounterPack = PackCount;
-                        dataPack.ConnectionState = Devstate;
-                        dataPack.CurrValue = buff[11];
-                        fPackOK = true;
-                    }
-                }
-                if (fPackOK)
-                {
-                    PLCDataPack NewPLCdp = new PLCDataPack();
-                    NewPLCdp.CopyFrom(dataPack);
-                    Monitor.Enter(DataBuff.PLCPackBuff);
-                    DataBuff.PLCPackBuff.Add(NewPLCdp);
-                    Monitor.Exit(DataBuff.PLCPackBuff);
-                    if (fPLCConnected)
-                    {
-                        Invoke(showPLCPack);
-                    }
-                }                            
-            }
-        }
         
         private void NewData(PLCDataPack dataPack)
         {
@@ -259,7 +117,6 @@ namespace SC_Gate
             {
                 X_arr[i] = i * (256 / ProgSett.ProgSettFlds.NHist);
             }
-
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Minimum = 0;
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Maximum = X_arr[ProgSett.ProgSettFlds.NHist];
             PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 16;
@@ -272,80 +129,59 @@ namespace SC_Gate
                 PLCPackBuff = new List<PLCDataPack>()
             };
             ShowScktDisconnect();                        
-            showPLCPack = new ShowData(ShowPLCPack);
-            showDisconnect = new ShowData(ShowScktDisconnect);
-
             ReportDateTime = DateTime.Now;
             ProgSett.XMLFileName = Environment.CurrentDirectory + "\\Settings.xml";
             ProgSett.ReadFields();
             HistSetting();
-
-            SettForm.Owner = this;
-            
+            SettForm.Owner = this;           
+        }
+        private void TryConnect()
+        {
+            if (SheepSocket == null)
+            {
+                SheepSocket = new PLCSocket(ProgSett.ProgSettFlds)
+                {
+                    ShowConnect = new DisplayData(ShowScktConnect),
+                    ShowDisconnect = new DisplayData(ShowScktDisconnect),
+                    ExportData = new AddData(NewData)
+                };
+                SheepSocket.Start(this);
+            }
+            else
+            {
+                SheepSocket.FTryConnect = true;
+            }
         }
 
         private void ConnectSckt_btn_Click(object sender, EventArgs e)
         {
             if (! fPLCConnected)
             {
-                fPLCConnected = ConnectToPLC();
-                if (fPLCConnected)
-                {                    
-                    ScktThread = new Thread(RequestForPLC);
-                    ScktThread.Start();
-                }
+                TryConnect();
             }
             else
             {
-                ConnectSckt_btn.Enabled = false;
-                fPLCConnected = false;
-                Stoptimer.Enabled = true;
+                SheepSocket.FDisconnect = true;
             }             
-        }      
-
+        }
         private void Gate_MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (fPLCConnected)
             {
-                fPLCConnected = false;
-                ScktThread.Join();
+                SheepSocket.FDisconnect = true;         //Закрыть подключение
+                Sckt_State_lbl.Text = StrNMess.ScktClsngMess;
+                Stoptimer.Enabled = true;
+                e.Cancel = true;                        //Подождать завершения потока                                              
             }
         }
-
-        private void Stoptimer_Tick(object sender, EventArgs e)
-        {
-            PLCSckt.Close();
-            StopCounter += 1;
-            ShowScktClosing();
-            if (StopCounter == 4)
-            {
-                StopCounter = 0;
-                Stoptimer.Enabled = false;                
-                ShowScktDisconnect();
-                ConnectSckt_btn.Enabled = true;
-                ConnectSckt_btn.Select();
-            }
-        }
-
         private void Settings_btn_Click(object sender, EventArgs e)
         {
             SettForm.ShowDialog();
             HistSetting();
         }
-
-        private void Test_button_Click(object sender, EventArgs e)
+        private void Stoptimer_Tick(object sender, EventArgs e)
         {
-            SheepSocket = new PLCSocket(ProgSett.ProgSettFlds)
-            {
-                ShowConnect = new DisplayData(ShowScktConnect),
-                ShowDisconnect = new DisplayData(ShowScktDisconnect),
-                ExportData = new AddData(NewData)
-            };
-
-            SheepSocket.Start(this);          
+            Close();
         }
-
-        
-        
     }
 }

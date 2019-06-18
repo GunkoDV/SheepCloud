@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.ConnectSckt_btn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.Sckt_State_lbl = new System.Windows.Forms.Label();
@@ -43,11 +43,9 @@
             this.COM_connect_stat_lbl = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.Stoptimer = new System.Windows.Forms.Timer(this.components);
             this.PLC_chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.Settings_btn = new System.Windows.Forms.Button();
-            this.Test_button = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.Stoptimer = new System.Windows.Forms.Timer(this.components);
             this.PLCData_GB.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PLC_chart)).BeginInit();
             this.SuspendLayout();
@@ -159,24 +157,19 @@
             this.label6.TabIndex = 0;
             this.label6.Text = "Состояние подключения ";
             // 
-            // Stoptimer
-            // 
-            this.Stoptimer.Interval = 500;
-            this.Stoptimer.Tick += new System.EventHandler(this.Stoptimer_Tick);
-            // 
             // PLC_chart
             // 
-            chartArea3.Name = "ChartArea1";
-            this.PLC_chart.ChartAreas.Add(chartArea3);
-            legend3.Enabled = false;
-            legend3.Name = "Legend1";
-            this.PLC_chart.Legends.Add(legend3);
+            chartArea2.Name = "ChartArea1";
+            this.PLC_chart.ChartAreas.Add(chartArea2);
+            legend2.Enabled = false;
+            legend2.Name = "Legend1";
+            this.PLC_chart.Legends.Add(legend2);
             this.PLC_chart.Location = new System.Drawing.Point(12, 174);
             this.PLC_chart.Name = "PLC_chart";
-            series3.ChartArea = "ChartArea1";
-            series3.Legend = "Legend1";
-            series3.Name = "Series1";
-            this.PLC_chart.Series.Add(series3);
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.PLC_chart.Series.Add(series2);
             this.PLC_chart.Size = new System.Drawing.Size(1182, 376);
             this.PLC_chart.TabIndex = 7;
             this.PLC_chart.Text = "chart1";
@@ -191,32 +184,15 @@
             this.Settings_btn.UseVisualStyleBackColor = true;
             this.Settings_btn.Click += new System.EventHandler(this.Settings_btn_Click);
             // 
-            // Test_button
+            // Stoptimer
             // 
-            this.Test_button.Location = new System.Drawing.Point(537, 40);
-            this.Test_button.Name = "Test_button";
-            this.Test_button.Size = new System.Drawing.Size(132, 53);
-            this.Test_button.TabIndex = 9;
-            this.Test_button.Text = "button1";
-            this.Test_button.UseVisualStyleBackColor = true;
-            this.Test_button.Click += new System.EventHandler(this.Test_button_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(533, 115);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 20);
-            this.label1.TabIndex = 11;
-            this.label1.Text = "label1";
+            this.Stoptimer.Tick += new System.EventHandler(this.Stoptimer_Tick);
             // 
             // Gate_MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1202, 557);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.Test_button);
             this.Controls.Add(this.Settings_btn);
             this.Controls.Add(this.PLC_chart);
             this.Controls.Add(this.PLCData_GB);
@@ -250,11 +226,9 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label Current_val_lbl;
         private System.Windows.Forms.Label COM_pack_counter_lbl;
-        private System.Windows.Forms.Timer Stoptimer;
         private System.Windows.Forms.DataVisualization.Charting.Chart PLC_chart;
         private System.Windows.Forms.Button Settings_btn;
-        private System.Windows.Forms.Button Test_button;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Timer Stoptimer;
     }
 }
 

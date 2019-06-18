@@ -20,18 +20,21 @@ namespace SC_Gate
         public bool FRun;
         public bool FTryConnect;
         public bool FConnected;
+        public bool FDisconnect;
 
         private TcpClient PLCSckt;
         private Thread ScktThread;
         private Gate_MainForm GMF;
         private readonly ProgramSettingsFeilds PSF;
         private PLCDataPack CurrentDP = new PLCDataPack();
+        private int WaitTimeOut = 10;           //Задержка чтения ответа контроллера после запроса
 
         public PLCSocket(ProgramSettingsFeilds aPSF)
         {
             PSF = aPSF;
             FTryConnect = true;
             FConnected = false;
+            FDisconnect = false;
         }
 
         public void Start(Gate_MainForm aGMF)
@@ -49,35 +52,41 @@ namespace SC_Gate
         {
             byte[] buff = new byte[1024];
             while (FRun)
-            {
-                
+            {                
                 if (FTryConnect)
                 {
                     FConnected = Connect();
                 }
                 while (FConnected)
-                {                    
-                    SendSendRequest();                    
-                    buff = ReceiveData();
-                    if (buff[7] == Gate_MainForm.ModbusFuncCode)      // Если ответ Modbus корректен парсим
+                {
+                    if (SendRequest())
                     {
-                        ParsData(buff);
+                        Thread.Sleep(WaitTimeOut);
+                        buff = ReceiveData();
+                        if (buff[7] == Gate_MainForm.ModbusFuncCode)      // Если ответ Modbus корректен парсим
+                        {
+                            ParsData(buff);
+                        }
                     }
-                    Thread.Sleep(10);
+                    if (FDisconnect)
+                    {
+                        FDisconnect = false;
+                        FConnected = false;
+                        Disconnect();
+                    }
+                    
                 }
                 Thread.Sleep(10);
-            }
-
-            
+            }            
         }
 
         private bool Connect()
-        {
-            FTryConnect = false;
+        {            
             try
             {
                 PLCSckt = new TcpClient(PSF.HostName, PSF.Port);
                 GMF.Invoke(ShowConnect);
+                FTryConnect = false;
                 return true;
             }
             catch (SocketException e)
@@ -90,7 +99,10 @@ namespace SC_Gate
 
         private void Disconnect()
         {
-            PLCSckt.Close();
+            if (PLCSckt != null)
+            {
+                PLCSckt.Close();
+            }
             GMF.Invoke(ShowDisconnect);
         }
 
@@ -112,7 +124,7 @@ namespace SC_Gate
             return command;
         }
 
-        private bool SendSendRequest()
+        private bool SendRequest()
         {
             byte[] command = GetRequest();
             try
@@ -124,7 +136,8 @@ namespace SC_Gate
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);               
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Disconnect();
                 FConnected = false;
                 return false;
             }
@@ -147,7 +160,9 @@ namespace SC_Gate
             {
                 FConnected = false;
                 MessageBox.Show(ex.Message, StrNMess.ErrorMessCaption,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);                
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Disconnect();
+                FConnected = false;
             }
             return buff;
         }
@@ -163,7 +178,7 @@ namespace SC_Gate
                 CurrentDP.CurrValue = buff[11];
                 PLCDataPack NewPLCdp = new PLCDataPack();
                 NewPLCdp.CopyFrom(CurrentDP);
-                GMF.Invoke(ExportData, new Object[] {NewPLCdp });
+                GMF.Invoke(ExportData, new Object[] {NewPLCdp});
             }            
                         
         }
