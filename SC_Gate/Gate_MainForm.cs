@@ -20,21 +20,17 @@ namespace SC_Gate
     public partial class Gate_MainForm : Form
     {
         public const int ModbusFuncCode = 3;       // Код функции Modbus (чтение регистров)
-
+        public ProgramSettings ProgSett = new ProgramSettings();
+        
         private bool fPLCConnected = false;        
         private DataStorage DataBuff;
-
         private double[] X_arr;
         private int[] Summ_arr;
-        private DateTime ReportDateTime;
-
-        public ProgramSettings ProgSett = new ProgramSettings();
-
+        private DateTime ReportDateTime;        
         private SettingsForm SettForm = new SettingsForm();      
-
-
         private PLCSocket SheepSocket;
-       
+        private const string SeriesName = "Series1";
+        private const string ChartAreaName = "ChartArea1";
 
         private void ShowScktDisconnect()
         {
@@ -51,9 +47,9 @@ namespace SC_Gate
             fPLCConnected = true;
         }       
 
-        public void ShowPLCPack()
+        public void ShowPLCPack(PLCDataPack plcdp)
         {
-            PLCDataPack plcdp = DataBuff.PLCPackBuff.Last();
+             
             switch (plcdp.ConnectionState)
             {
                 case 0:
@@ -90,18 +86,18 @@ namespace SC_Gate
                         Summ_arr[i]++;
                     }
                 }
-            PLC_chart.Series["Series1"].Points.Clear();
+            PLC_chart.Series[SeriesName].Points.Clear();
             int ValueCount = DataBuff.PLCPackBuff.Count;
             for (int i = 0; i < ProgSett.ProgSettFlds.NHist; i++)
             {                
-                PLC_chart.Series["Series1"].Points.AddXY(X_arr[i], (Summ_arr[i]+0.0)/ValueCount);
+                PLC_chart.Series[SeriesName].Points.AddXY(X_arr[i], (Summ_arr[i]+0.0)/ValueCount);
             }            
         }       
         
         private void NewData(PLCDataPack dataPack)
         {
             DataBuff.PLCPackBuff.Add(dataPack);
-            ShowPLCPack();
+            ShowPLCPack(dataPack);
         }
 
         public Gate_MainForm()
@@ -117,9 +113,9 @@ namespace SC_Gate
             {
                 X_arr[i] = i * (256 / ProgSett.ProgSettFlds.NHist);
             }
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Minimum = 0;
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Maximum = X_arr[ProgSett.ProgSettFlds.NHist];
-            PLC_chart.ChartAreas["ChartArea1"].AxisX.Interval = 16;
+            PLC_chart.ChartAreas[ChartAreaName].AxisX.Minimum = 0;
+            PLC_chart.ChartAreas[ChartAreaName].AxisX.Maximum = X_arr[ProgSett.ProgSettFlds.NHist];
+            PLC_chart.ChartAreas[ChartAreaName].AxisX.Interval = 16;
         }
 
         private void Gate_MainForm_Load(object sender, EventArgs e)
@@ -135,6 +131,7 @@ namespace SC_Gate
             HistSetting();
             SettForm.Owner = this;           
         }
+
         private void TryConnect()
         {
             if (SheepSocket == null)
@@ -164,6 +161,7 @@ namespace SC_Gate
                 SheepSocket.FDisconnect = true;
             }             
         }
+
         private void Gate_MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (fPLCConnected)
