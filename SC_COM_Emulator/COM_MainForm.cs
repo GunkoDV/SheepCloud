@@ -276,10 +276,13 @@ namespace SC_COM_Emulator
 
         private void COM_MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (TransferThread.IsAlive)
+            if (TransferThread != null)
             {
-                TransferThread.Abort();
-            }            
+                if (TransferThread.IsAlive)
+                {
+                    TransferThread.Abort();
+                }
+            }
         }
     }
 
